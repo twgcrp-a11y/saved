@@ -1,0 +1,5 @@
+{
+  "name": "RecruitOS",
+  "description": "A modern Recruitment Operating System for placement consulting firms, featuring client management, job tracking, AI-powered candidate parsing, and a visual recruitment pipeline.",
+  "requestFramePermissions": []
+}
