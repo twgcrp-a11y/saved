@@ -54,43 +54,36 @@ export function Sidebar({ className }: { className?: string }) {
   });
 
   return (
-    <div className={cn("pb-12 h-full border-r bg-card", className)}>
+    <div className={cn("pb-12 h-full border-r bg-slate-950 text-slate-300 border-slate-800", className)}>
       <div className="space-y-4 py-4">
-        <div className="px-6 py-2">
-          <Link to="/" className="block">
-            <img 
-              src="/logo.png" 
-              alt="Rozgaar Logo" 
-              className="h-12 w-auto object-contain max-w-full"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-            <div className="hidden">
-              <div className="flex items-baseline mb-1">
-                <span className="text-4xl font-black text-primary leading-none" style={{ fontFamily: 'system-ui, sans-serif' }}>र</span>
-                <span className="text-3xl font-black text-secondary tracking-tight leading-none" style={{ fontFamily: 'comic sans ms, cursive, sans-serif' }}>ozgaar</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground font-medium pl-1 uppercase tracking-widest mt-1">Creating Employment</p>
-            </div>
+        <div className="px-6 py-4 flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-2xl font-bold tracking-tight text-white">Rozgaar</span>
           </Link>
         </div>
-        <Separator />
+        <Separator className="bg-slate-800" />
         <div className="px-3 py-2">
           <div className="space-y-1">
-            {filteredNavItems.map((item) => (
-              <Button
-                key={item.href}
-                render={<Link to={item.href} />}
-                variant={location.pathname === item.href ? "secondary" : "ghost"}
-                className="w-full justify-start gap-3"
-                nativeButton={false}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Button>
-            ))}
+            {filteredNavItems.map((item) => {
+              const isActive = location.pathname === item.href;
+              return (
+                <Button
+                  key={item.href}
+                  render={<Link to={item.href} />}
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start gap-3 transition-colors",
+                    isActive 
+                      ? "bg-slate-800 text-white hover:bg-slate-800/90" 
+                      : "hover:bg-slate-800/50 hover:text-white text-slate-400"
+                  )}
+                  nativeButton={false}
+                >
+                  <item.icon className={cn("h-4 w-4", isActive ? "text-green-500" : "text-amber-500")} />
+                  <span className={isActive ? "font-semibold" : "font-medium"}>{item.label}</span>
+                </Button>
+              );
+            })}
           </div>
         </div>
       </div>

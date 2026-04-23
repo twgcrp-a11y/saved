@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Briefcase, UserCircle, CheckCircle2, Search, BrainCircuit, Target, ArrowRight } from 'lucide-react';
 import { useData } from '@/src/contexts/DataContext';
+import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
-  const { clients, jobs, candidates, applications } = useData();
+  const { clients, jobs, candidates, applications, activityLogs } = useData();
   
   const stats = [
     { title: 'Total Clients', value: clients.length.toString(), icon: Users, color: 'text-blue-600' },
@@ -181,42 +182,119 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+        <Card className="col-span-4 lg:col-span-3 h-[400px] flex flex-col">
+          <CardHeader className="py-4 border-b">
+            <CardTitle className="text-base flex items-center gap-2">
+              <UserCircle className="h-4 w-4" /> Recent Activity
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-auto p-4">
             <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center">
-                    <UserCircle className="h-5 w-5" />
+              {activityLogs.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No recent activity yet.</p>
+              ) : (
+                activityLogs.slice(0, 10).map((log) => (
+                  <div key={log.id} className="flex items-start gap-3 border-b pb-3 last:border-0">
+                    <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                      <UserCircle className="h-4 w-4 text-slate-500" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs font-medium leading-none">
+                        {log.userName} <span className="text-muted-foreground font-normal">{log.action}</span>
+                      </p>
+                      <p className="text-sm">
+                        {log.details}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {new Date(log.timestamp).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Candidate {i} was moved to Interview
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      2 hours ago
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Upcoming Interviews</CardTitle>
+        
+        <Card className="col-span-4 lg:col-span-4 h-[400px] flex flex-col border-blue-200 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+             <BrainCircuit className="w-48 h-48 text-blue-900" />
+          </div>
+          <CardHeader className="py-4 border-b bg-blue-50/50">
+            <CardTitle className="text-base flex items-center gap-2 text-blue-900">
+              <BrainCircuit className="h-4 w-4" /> AI Placement Agent
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex flex-col gap-1 border-b pb-4 last:border-0">
-                  <p className="text-sm font-medium">Software Engineer @ TechCorp</p>
-                  <p className="text-xs text-muted-foreground">John Doe • 10:00 AM Today</p>
+          <CardContent className="flex-1 overflow-auto p-0">
+            <div className="divide-y divide-blue-50">
+              {jobs.filter(j => j.status === 'Open').slice(0, 5).map(job => {
+                // Find candidates who have overlapping skills and are not yet applied to this job
+                const appliedCandidateIds = new Set(applications.filter(a => a.jobId === job.id).map(a => a.candidateId));
+                
+                const jobSkillsLower = job.skillsRequired.map(s => s.toLowerCase());
+                
+                const potentialMatches = candidates
+                  .filter(c => !appliedCandidateIds.has(c.id))
+                  .map(c => {
+                    const cSkillsLower = c.skills.map(s => s.toLowerCase());
+                    const overlap = cSkillsLower.filter(s => jobSkillsLower.some(js => js.includes(s) || s.includes(js))).length;
+                    const matchPercent = jobSkillsLower.length > 0 ? Math.round((overlap / jobSkillsLower.length) * 100) : 0;
+                    return { candidate: c, matchPercent };
+                  })
+                  .filter(m => m.matchPercent >= 30) // Minimum 30% heuristic match to show
+                  .sort((a, b) => b.matchPercent - a.matchPercent)
+                  .slice(0, 2); // Top 2 matches per job
+
+                if (potentialMatches.length === 0) return null;
+
+                return (
+                  <div key={job.id} className="p-4 bg-white/60 hover:bg-white transition-colors">
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-3.5 w-3.5 text-blue-500" />
+                        <h4 className="font-semibold text-sm">{job.roleTitle}</h4>
+                      </div>
+                      <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full font-medium">
+                        {job.clientName}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2 mt-3">
+                      {potentialMatches.map(match => (
+                        <div key={match.candidate.id} className="flex justify-between items-center bg-slate-50 border border-slate-100 p-2 rounded-lg">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold">{match.candidate.name}</span>
+                            <span className="text-[10px] text-muted-foreground">{match.candidate.experience} yrs exp • {match.candidate.location}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex flex-col items-end">
+                              <span className="text-[10px] font-bold text-green-600">{match.matchPercent}% Match</span>
+                              <span className="text-[9px] text-muted-foreground">Based on skills</span>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="h-7 text-[10px] border-blue-200 text-blue-700 hover:bg-blue-50"
+                              onClick={() => {
+                                // Provide a window.location navigate to the candidate/job screening
+                                window.location.href = `/candidates/${match.candidate.id}/screen?jobId=${job.id}`;
+                              }}
+                            >
+                              Screen <ArrowRight className="h-3 w-3 ml-1" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {jobs.length === 0 && (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  Post a job to start seeing AI recommendations.
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
