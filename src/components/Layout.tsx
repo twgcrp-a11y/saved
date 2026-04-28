@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   LogOut,
-  UserCog
+  UserCog,
+  Network
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -36,6 +37,7 @@ const navItems = [
   { icon: GitBranch, label: 'Pipeline', href: '/pipeline' },
   { icon: BarChart3, label: 'Reports', href: '/reports' },
   { icon: TrendingUp, label: 'Performance', href: '/performance' },
+  { icon: Network, label: 'Mapping & Pathways', href: '/mapping' },
   { icon: UserCog, label: 'Recruiters', href: '/recruiters', adminOnly: true },
 ];
 

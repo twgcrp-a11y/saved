@@ -56,6 +56,8 @@ export type Job = {
   createdAt: number;
 };
 
+export type Pathway = 'Skill Development' | 'Academics Mapping' | 'Recruitment' | 'Global Mobility' | 'EDP (Entrepreneurship)' | 'Unmapped';
+
 export type Candidate = {
   id: string;
   name: string;
@@ -68,6 +70,8 @@ export type Candidate = {
   source: string;
   tags: string[];
   parsedData?: any;
+  pathway?: Pathway;
+  harmonizedScore?: number;
   createdAt: number;
 };
 

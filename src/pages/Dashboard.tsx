@@ -9,9 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Briefcase, UserCircle, CheckCircle2, Search, BrainCircuit, Target, ArrowRight } from 'lucide-react';
 import { useData } from '@/src/contexts/DataContext';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const { clients, jobs, candidates, applications, activityLogs } = useData();
+  const navigate = useNavigate();
   
   const stats = [
     { title: 'Total Clients', value: clients.length.toString(), icon: Users, color: 'text-blue-600' },
@@ -275,10 +277,7 @@ export default function Dashboard() {
                               size="sm" 
                               variant="outline" 
                               className="h-7 text-[10px] border-blue-200 text-blue-700 hover:bg-blue-50"
-                              onClick={() => {
-                                // Provide a window.location navigate to the candidate/job screening
-                                window.location.href = `/candidates/${match.candidate.id}/screen?jobId=${job.id}`;
-                              }}
+                              onClick={() => navigate(`/candidates/${match.candidate.id}/screen?jobId=${job.id}`)}
                             >
                               Screen <ArrowRight className="h-3 w-3 ml-1" />
                             </Button>

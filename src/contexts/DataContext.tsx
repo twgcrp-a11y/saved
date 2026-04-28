@@ -84,6 +84,7 @@ interface DataContextType {
   addApplication: (application: Omit<Application, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateJobStatus: (jobId: string, status: Job['status']) => Promise<void>;
   updateApplicationStatus: (appId: string, status: Application['status'], extra?: Partial<Application>) => Promise<void>;
+  updateCandidate: (candidateId: string, data: Partial<Candidate>) => Promise<void>;
   deleteClient: (clientId: string) => Promise<void>;
   deleteJob: (jobId: string) => Promise<void>;
   deleteCandidate: (candidateId: string) => Promise<void>;
@@ -271,6 +272,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateCandidate = async (candidateId: string, data: Partial<Candidate>) => {
+    try {
+      await updateDoc(doc(db, 'candidates', candidateId), data);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `candidates/${candidateId}`);
+    }
+  };
+
   const deleteClient = async (clientId: string) => {
     try {
       await deleteDoc(doc(db, 'clients', clientId));
@@ -309,6 +318,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addApplication,
       updateJobStatus,
       updateApplicationStatus,
+      updateCandidate,
       deleteClient,
       deleteJob,
       deleteCandidate,
